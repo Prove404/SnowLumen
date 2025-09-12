@@ -26,3 +26,9 @@ Build/
 *.userprefs
 *.swp
 
+# Exclude vehicle template files (UE template, not needed in repository)
+Content/VehicleTemplate/
+Content/Vehicles/
+Content/__ExternalActors__/VehicleTemplate/
+Content/__ExternalObjects__/VehicleTemplate/
+
