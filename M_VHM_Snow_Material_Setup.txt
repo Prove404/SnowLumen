@@ -1,0 +1,58 @@
+M_VHM_Snow Material Setup for UE5.6
+=====================================
+
+Create a new Material asset at: Content/Materials/M_VHM_Snow.uasset
+
+Material Properties:
+- Shading Model: Default Lit
+- Two Sided: true
+- Disable Substrate: true (use standard shading)
+
+Scalar Parameters:
+- SnowDisplacementScale (default: 1.0)
+
+Vector2 Parameters:
+- SnowOriginMeters (default: (0,0))
+- SnowInvSizePerMeter (default: (0.01, 0.01))
+
+Texture2D Parameter:
+- SnowDepthTex (Sampler Type: Linear Color, sRGB: false)
+
+Material Setup:
+
+1. Base Color: Constant3Vector (0.8, 0.9, 1.0) - light blue for snow
+
+2. Metallic: 0.0
+
+3. Specular: 0.1
+
+4. Roughness: 0.3
+
+5. Normal: Use a normal map or flat normal
+
+6. World Position Offset:
+
+   // UV calculation for sampling snow depth
+   AbsoluteWorldPosition -> ComponentMask (RG) -> Divide by 100 (convert cm to meters)
+   -> Subtract SnowOriginMeters -> Multiply by SnowInvSizePerMeter
+   -> Clamp (0, 1) -> Sample SnowDepthTex (Linear Color, sRGB=false)
+
+   // Convert snow depth from texture to displacement
+   SnowDepth (R channel) -> Multiply by 100 (convert meters to cm)
+   -> Multiply by SnowDisplacementScale -> Make Float3 (0, 0, depth)
+   -> Add to WorldPositionOffset
+
+Node Network:
+- AbsoluteWorldPosition (WorldPosition) -> ComponentMask (RG)
+- Divide (by 100.0)
+- Subtract (SnowOriginMeters)
+- Multiply (SnowInvSizePerMeter)
+- Clamp (Min=0, Max=1)
+- TextureSample (SnowDepthTex, UV from above)
+- ComponentMask (R) - get red channel (snow depth in meters)
+- Multiply (by 100.0) - convert to cm
+- Multiply (by SnowDisplacementScale)
+- AppendVector (X=0, Y=0, Z=snow_depth_cm)
+- Connect to World Position Offset
+
+This material will displace the VHM mesh based on the snow depth texture from the simulation.

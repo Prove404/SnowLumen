@@ -1,0 +1,13 @@
+{
+  "FileVersion": 3,
+  "VersionName": "1.0",
+  "FriendlyName": "WorldClim Data",
+  "Description": "Editor importers and assets for WorldClim BIL/HDR rasters.",
+  "Category": "Editor",
+  "CanContainContent": false,
+  "IsBetaVersion": false,
+  "EnabledByDefault": true,
+  "Modules": [
+    { "Name": "WorldClimData", "Type": "Editor", "LoadingPhase": "Default" }
+  ]
+}
