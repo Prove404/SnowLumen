@@ -12,7 +12,7 @@
 // @TODO what is the time step of Premozes simulation?
 // @TODO Test Solar Radiations values from the paper
 
-FString UDegreeDayCPUSimulation::GetSimulationName()
+FString UDegreeDayCPUSimulation::GetSimulationName() const
 {
 	return FString(TEXT("Degree Day CPU"));
 }
@@ -155,6 +155,12 @@ UTexture* UDegreeDayCPUSimulation::GetSnowMapTexture()
 	SnowMapTexture = UTexture2D::CreateTransient(CellsDimensionX, CellsDimensionY, EPixelFormat::PF_G16);
 
 	SnowMapTexture->UpdateResource();
+	
+	// One-time log after texture creation
+	UE_LOG(LogTemp, Display, TEXT("[Snow] Created DegreeDayCPUSimulation SnowMapTexture: PF=%s, sRGB=%s, size=%dx%d"), 
+		*UEnum::GetValueAsString(SnowMapTexture->GetPixelFormat()),
+		SnowMapTexture->SRGB ? TEXT("true") : TEXT("false"),
+		SnowMapTexture->GetSizeX(), SnowMapTexture->GetSizeY());
 	SnowMapTextureData.Empty(Cells.Num());
 
 	// Update snow map texture

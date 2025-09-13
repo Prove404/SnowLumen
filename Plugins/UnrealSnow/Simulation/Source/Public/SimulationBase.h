@@ -15,7 +15,7 @@ enum class EDebugVisualizationType : uint8;
 /**
 * Base class for the snow distribution simulation.
 */
-UCLASS(abstract)
+UCLASS(Abstract, BlueprintType, EditInlineNew, DefaultToInstanced)
 class SIMULATION_API USimulationBase : public UObject
 {
 	GENERATED_BODY()
@@ -32,7 +32,7 @@ public:
 	/**
 	* Returns the name of the simulation.
 	*/
-	virtual FString GetSimulationName() PURE_VIRTUAL(USimulationBase::GetSimulationName, return TEXT(""););
+	virtual FString GetSimulationName() const { return GetClass()->GetName(); }
 
 	/**
 	* Initializes the simulation.

@@ -32,7 +32,7 @@ FWeatherForcingData UConstantWeatherProvider::GetWeatherForcing(FDateTime Time, 
 	// Convert units to simulation format
 	float TempK = Temperature_C + 273.15f;  // Celsius to Kelvin
 	float RH_01 = FMath::Clamp(RH_Percent / 100.0f, 0.0f, 1.0f);  // Percent to 0-1
-	float Precip_kgm2s = Precipitation_mmph * 1000.0f / 3600.0f;  // mm/h to kg/m²/s (assuming water density ~1000 kg/m³)
+	float Precip_kgm2s = Precipitation_mmph / 3600.0f;  // mm/h to kg/m²/s (1 mm = 1 kg/m²)
 
 	return FWeatherForcingData(
 		Time,

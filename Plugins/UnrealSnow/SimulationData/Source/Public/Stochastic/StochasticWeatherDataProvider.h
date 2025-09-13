@@ -50,4 +50,11 @@ public:
 	virtual TResourceArray<FClimateData>* CreateRawClimateDataResourceArray(FDateTime StartTime, FDateTime EndTime) override final;
 
 	virtual void Initialize(FDateTime StartTime, FDateTime EndTime) override final;
+
+	/** Return weather forcing for a given time and optional grid coord */
+	virtual FWeatherForcingData GetWeatherForcing(FDateTime Time, int32 GridX = 0, int32 GridY = 0) override;
+
+private:
+	FDateTime StartTimeRef;
+	int32 TotalHours = 0;
 };

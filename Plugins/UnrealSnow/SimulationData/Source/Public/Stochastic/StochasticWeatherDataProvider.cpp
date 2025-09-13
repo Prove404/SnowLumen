@@ -27,15 +27,16 @@ void UStochasticWeatherDataProvider::Initialize(FDateTime StartTime, FDateTime E
 	}
 
 	// Generate precipitation
+	StartTimeRef = StartTime;
 	auto TimeSpan = EndTime - StartTime;
-	auto TimeSpanHours =  static_cast<int32>(TimeSpan.GetTotalHours());
+	TotalHours =  static_cast<int32>(TimeSpan.GetTotalHours());
 	FDateTime CurrentTime = StartTime;
 
-	ClimateData = std::vector<std::vector<FClimateData>>(TimeSpanHours, std::vector<FClimateData>(Resolution * Resolution));
+	ClimateData = std::vector<std::vector<FClimateData>>(TotalHours, std::vector<FClimateData>(Resolution * Resolution));
 
 	auto Measurement = std::vector<std::vector<float>>(Resolution, std::vector<float>(Resolution));
 
-	for (int32 Hour = 0; Hour < TimeSpanHours; ++Hour)
+	for (int32 Hour = 0; Hour < TotalHours; ++Hour)
 	{
 		for (int32 Y = 0; Y < Resolution; ++Y)
 		{
@@ -98,12 +99,12 @@ void UStochasticWeatherDataProvider::Initialize(FDateTime StartTime, FDateTime E
 TResourceArray<FClimateData>* UStochasticWeatherDataProvider::CreateRawClimateDataResourceArray(FDateTime StartTime, FDateTime EndTime)
 {
 	auto TimeSpan = EndTime - StartTime;
-	int32 TotalHours = static_cast<int>(TimeSpan.GetTotalHours());
+	int32 TotalHoursLocal = static_cast<int>(TimeSpan.GetTotalHours());
 
 	TResourceArray<FClimateData>* ClimateResourceArray = new TResourceArray<FClimateData>();
-	ClimateResourceArray->Reserve(TotalHours * Resolution * Resolution);
+	ClimateResourceArray->Reserve(TotalHoursLocal * Resolution * Resolution);
 
-	for (int32 Hour = 0; Hour < TotalHours; ++Hour)
+	for (int32 Hour = 0; Hour < TotalHoursLocal; ++Hour)
 	{
 		for (int32 ClimateIndex = 0; ClimateIndex < Resolution * Resolution; ++ClimateIndex)
 		{
@@ -112,5 +113,34 @@ TResourceArray<FClimateData>* UStochasticWeatherDataProvider::CreateRawClimateDa
 	}
 
 	return ClimateResourceArray;
+}
+
+FWeatherForcingData UStochasticWeatherDataProvider::GetWeatherForcing(FDateTime Time, int32 GridX, int32 GridY)
+{
+	if (TotalHours <= 0 || Resolution <= 0 || ClimateData.empty())
+	{
+		return FWeatherForcingData();
+	}
+
+	int32 HourIndex = static_cast<int32>((Time - StartTimeRef).GetTotalHours());
+	HourIndex = FMath::Clamp(HourIndex, 0, TotalHours - 1);
+
+	// Wrap grid indices into [0, Resolution)
+	const int32 X = (Resolution > 0) ? (GridX % Resolution + Resolution) % Resolution : 0;
+	const int32 Y = (Resolution > 0) ? (GridY % Resolution + Resolution) % Resolution : 0;
+	const int32 StationIndex = X + Y * Resolution;
+
+	const FClimateData& C = ClimateData[HourIndex][StationIndex];
+
+	// Convert to forcing units: Temp K, precip kg/m²/s
+	const float TempK = C.Temperature + 273.15f;
+	const float Precip_kgm2s = C.Precipitation / 3600.0f; // mm/h ⇒ kg/m²/s
+	const float RH_01 = 0.6f;
+	const float Wind_mps = 2.0f;
+	const float SWdown_Wm2 = 230.0f;
+	const float LWdown_Wm2 = 210.0f;
+	const float SnowFrac = (C.Temperature <= 0.0f) ? 1.0f : 0.0f;
+
+	return FWeatherForcingData(Time, TempK, SWdown_Wm2, LWdown_Wm2, Wind_mps, RH_01, Precip_kgm2s, SnowFrac);
 }
 

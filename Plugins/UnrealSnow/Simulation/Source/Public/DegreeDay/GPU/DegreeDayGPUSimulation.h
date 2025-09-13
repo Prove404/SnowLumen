@@ -28,11 +28,17 @@ private:
 
 public:
 
-	virtual FString GetSimulationName() override final;
+	virtual FString GetSimulationName() const override final;
 
 	virtual void Simulate(ASnowSimulationActor* SimulationActor, int32 CurrentSimulationStep, int32 Timesteps, bool SaveSnowMap, bool CaptureDebugInformation, TArray<FDebugCell>& DebugCells) override final;
 
 	virtual void Initialize(ASnowSimulationActor* SimulationActor, const TArray<FLandscapeCell>& Cells, float InitialMaxSnow, UWorld* World) override final;
+
+	// Ensure base grid/texture setup is called for the BN-event initializer
+	virtual void Initialize_Implementation(int32 GX, int32 GY, float CellM) override
+	{
+		Super::Initialize_Implementation(GX, GY, CellM);
+	}
 
 	virtual UTexture* GetSnowMapTexture() override final;
 

@@ -121,7 +121,8 @@ bool UCsvWeatherProvider::ParseCsvLine(const FString& Line, FWeatherForcingData&
 	// Convert units
 	float TempK = TempC + 273.15f;
 	float RH_01 = FMath::Clamp(RH_pct / 100.0f, 0.0f, 1.0f);
-	float Precip_kgm2s = Precip_mmph * 1000.0f / 3600.0f;
+	// 1 mm precipitation = 1 kg/m²; convert mm/h to kg/m²/s by dividing by 3600
+	float Precip_kgm2s = Precip_mmph / 3600.0f;
 
 	OutData = FWeatherForcingData(Timestamp, TempK, SWdown_Wm2, LWdown_Wm2, Wind_mps, RH_01, Precip_kgm2s, SnowFrac);
 	return true;

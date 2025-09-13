@@ -6,7 +6,7 @@
 #include "Util/MathUtil.h"
 #include "LandscapeComponent.h"
 
-FString UDegreeDayGPUSimulation::GetSimulationName()
+FString UDegreeDayGPUSimulation::GetSimulationName() const
 {
 	return FString(TEXT("Degree Day GPU"));
 }
@@ -59,6 +59,11 @@ void UDegreeDayGPUSimulation::Initialize(ASnowSimulationActor* SimulationActor, 
 
 	RenderTarget->UpdateResource();
 	
+	// One-time log after render target creation
+	UE_LOG(LogTemp, Display, TEXT("[Snow] Created DegreeDayGPUSimulation RenderTarget: PF=%s, size=%dx%d"), 
+		*UEnum::GetValueAsString(RenderTarget->GetFormat()),
+		RenderTarget->SizeX, RenderTarget->SizeY);
+	
 	// Initialize shaders
 	auto ClimateData = SimulationActor->ClimateDataComponent->CreateRawClimateDataResourceArray(SimulationActor->StartTime, SimulationActor->EndTime);
 	auto SimulationTimeSpan = SimulationActor->EndTime - SimulationActor->StartTime;
@@ -79,7 +84,8 @@ UTexture* UDegreeDayGPUSimulation::GetSnowMapTexture()
 		UTexture* RenderTargetTexture = Cast<UTexture>(RenderTarget);
 		return RenderTargetTexture;
 	}
-	return nullptr;
+	// Fallback to base-managed texture
+	return Super::GetSnowMapTexture();
 }
 
 
